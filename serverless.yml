@@ -1,12 +1,15 @@
-service: serverless-rest-api-with-dynamodb
+service: todo-list
 
 frameworkVersion: ">=1.1.0 <2.0.0"
+
+custom:
+  tableName: todo-table
 
 provider:
   name: aws
   runtime: nodejs4.3
   environment:
-    DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}
+    DYNAMODB_TABLE: ${self:custom.tableName}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -16,7 +19,7 @@ provider:
         - dynamodb:PutItem
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
-      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${env:DYNAMODB_TABLE}"
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:custom.tableName}
 
 functions:
   create:
@@ -62,7 +65,7 @@ functions:
 resources:
   Resources:
     TodosDynamoDbTable:
-      Type: 'AWS::DynamoDB::Table'
+      Type: AWS::DynamoDB::Table
       DeletionPolicy: Retain
       Properties:
         AttributeDefinitions:
@@ -76,4 +79,4 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
-        TableName: ${env:DYNAMODB_TABLE}
+        TableName: ${self:custom.tableName}
